@@ -26,9 +26,8 @@ public class ClinicTest {
 
     @BeforeEach
     public void init() {
-        if (!clients.isEmpty()) {
+        if (!clients.isEmpty())
             clients.removeAll(clients);
-        }
         clients.add(CLIENT1);
         clients.add(CLIENT2);
     }
