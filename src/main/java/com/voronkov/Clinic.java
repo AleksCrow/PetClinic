@@ -1,8 +1,13 @@
 package com.voronkov;
 
+import com.voronkov.exceptions.NotFoundException;
+import com.voronkov.model.Client;
+import com.voronkov.model.Pet;
+import com.voronkov.model.PetType;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -20,7 +25,7 @@ public class Clinic {
     public void getOperation() {
         String programExit = "no";
         while (!programExit.equals("exit")) {
-            int operationType = Integer.parseInt(getStringFromKeybr("Select operation:" +
+            int operationType = Integer.parseInt(getStringFromKeybr(System.in, "Select operation:" +
                     " 1 - add client, " +
                     " 2 - find client by pet name," +
                     " 3 - find client," +
@@ -33,25 +38,25 @@ public class Clinic {
                     addClient();
                     break;
                 case 2:
-                    findClientByPetName();
+                    findClientByPetName(System.in, clients);
                     break;
                 case 3:
-                    findClientByName();
+                    findClientByName(System.in, clients);
                     break;
                 case 4:
-                    renameClient();
+                    renameClient(System.in, System.in, clients);
                     break;
                 case 5:
-                    renamePet();
+                    renamePet(System.in, System.in, clients);
                     break;
                 case 6:
-                    removeClient();
+                    removeClient(System.in, clients);
                     break;
                 case 7:
                     getAllClients();
                     break;
             }
-            programExit = getStringFromKeybr("Continue or exit? exit/no");
+            programExit = getStringFromKeybr(System.in, "Continue or exit? exit/no");
         }
     }
 
@@ -59,8 +64,8 @@ public class Clinic {
     /**
      * add client
      */
-    private void addClient() {
-        String clientName = getStringFromKeybr("Enter client name");
+    private void addClient(){
+        String clientName = getStringFromKeybr(System.in, "Enter client name");
         if (clients.size() > 0) {
             for (Client addedClient : clients) {
                 if (clientName.equals(addedClient.getName())) {
@@ -70,8 +75,8 @@ public class Clinic {
                 }
             }
         }
-        String petName = getStringFromKeybr("Enter pet name");
-        int petTypeByNumber = Integer.parseInt(getStringFromKeybr("Enter pet type:" +
+        String petName = getStringFromKeybr(System.in ,"Enter pet name");
+        int petTypeByNumber = Integer.parseInt(getStringFromKeybr(System.in, "Enter pet type:" +
                 " 1 - Cat," +
                 " 2 - Dog," +
                 " 3 - Bird," +
@@ -97,108 +102,119 @@ public class Clinic {
 
     /**
      * find client by name
+     * @param in client's name
+     * @param clients list of clients
      */
-    private void findClientByName() {
-        String clientName = getStringFromKeybr("Enter client name");
-        String findedClient = "Client with name " + clientName + " not found in base";
-        Optional<Client> client = findClient(clientName);
-        if (client.isPresent()) {
-            findedClient = client.get().toString();
-        }
-        System.out.println(findedClient);
+    public Client findClientByName(InputStream in, List<Client> clients) {
+        String clientName = getStringFromKeybr(in, "Enter client name");
+        return findClient(clientName, clients);
     }
 
     /**
      * find client by pet name
+     * @param in pet's name
+     * @param clients list of clients
      */
-    private void findClientByPetName() {
-        String petName = getStringFromKeybr("Enter pet name");
-        String findedClient = "Client with pet name " + petName + " not found in base";
-        Optional<Client> client = findPetOfClient(petName);
-        if (client.isPresent()) {
-            findedClient = client.get().toString();
-        }
-        System.out.println(findedClient);
+    public Client findClientByPetName(InputStream in, List<Client> clients) {
+        String petName = getStringFromKeybr(in, "Enter pet name");
+        return findPetOfClient(petName, clients);
     }
 
     /**
      * rename client
+     * @param inOld old name
+     * @param inNew new name
+     * @param clients client's name, which must renamed
      */
-    private void renameClient() {
-        String clientName = getStringFromKeybr("Enter client name");
-        String findedClient = "Client with name " + clientName + " not found in base";
-        Optional<Client> client = findClient(clientName);
-        if (client.isPresent()) {
-            client.get().setName(getStringFromKeybr("Enter new name"));
-            System.out.println("Client " + client.get().getName() + " renamed");
-        } else {
-            System.out.println(findedClient);
-        }
+    public void renameClient(InputStream inOld, InputStream inNew, List<Client> clients) {
+        String clientName = getStringFromKeybr(inOld, "Enter client name");
+        Client client = findClient(clientName, clients);
+        client.setName(getStringFromKeybr(inNew, "Enter new name"));
+        System.out.println("Client " + client.getName() + " renamed");
     }
 
     /**
      * rename clients pet
+     * @param inOld old name
+     * @param inNew new name
+     * @param clients client's name, which pet must renamed
      */
-    private void renamePet() {
-        String petName = getStringFromKeybr("Enter pet name");
-        String findedClient = "Client with pet name " + petName + " not found in base";
-        Optional<Client> client = findPetOfClient(petName);
-        if (client.isPresent()) {
-            client.get().getPet().setName(getStringFromKeybr("Enter new pet name"));
-            System.out.println("Pet of client " + client.get().getName() + " renamed");
-        } else {
-            System.out.println(findedClient);
-        }
+    public void renamePet(InputStream inOld, InputStream inNew, List<Client> clients) {
+        String clientName = getStringFromKeybr(inOld, "Enter client name");
+        Client client = findClient(clientName, clients);
+        client.getPet().setName(getStringFromKeybr(inNew, "Enter new name"));
+        System.out.println("Client's pet " + client.getPet().getName() + " renamed");
     }
 
     /**
      * remove client
+     * @param in parameter, which get from keyboard
+     * @param clients client's name, which must deleted
      */
-    private void removeClient() {
-        String clientName = getStringFromKeybr("Enter client name");
-        String findedClient = "Client with name " + clientName + " not found in base";
-        Optional<Client> client = findClient(clientName);
-        if (client.isPresent()) {
-            clients.remove(client.get());
-            System.out.println("Client " + clientName + " removed");
-        } else {
-            System.out.println(findedClient);
-        }
+    public void removeClient(InputStream in, List<Client> clients) {
+        String clientName = getStringFromKeybr(in, "Enter client name");
+        Client client = findClient(clientName, clients);
+        clients.remove(client);
+        System.out.println("Client " + clientName + " removed");
     }
 
     /**
      * get all clients
      */
-    private void getAllClients() {
+    public List<Client> getAllClients() {
         System.out.println(clients);
+        return clients;
     }
 
     /**
      * find optional client
-     * @param clientName
+     * @param clientName client's name
+     * @param clients List of clients
      */
-    private Optional<Client> findClient(String clientName) {
-        return clients.stream()
+    public Client findClient(String clientName, List<Client> clients) {
+        Client client;
+        client = clients.stream()
                 .filter(c -> c.getName().equals(clientName))
-                .findFirst();
+                .findFirst()
+                .orElse(null);
+        if (client == null) {
+            try {
+                throw new NotFoundException("This client name not found in base");
+            } catch (NotFoundException e) {
+                System.out.println(e);
+            }
+        }
+        return client;
     }
 
     /**
      * find optional client by pet name
-     * @param petName
+     * @param petName pet's name
+     * @param clients list of clients
      */
-    private Optional<Client> findPetOfClient(String petName) {
-        return clients.stream()
+    public Client findPetOfClient(String petName, List<Client> clients) {
+        Client client;
+        client = clients.stream()
                 .filter(c -> c.getPet().getName().equals(petName))
-                .findFirst();
+                .findFirst()
+                .orElse(null);
+        if (client == null) {
+            try {
+                throw new NotFoundException("This pet name not found in base");
+            } catch (NotFoundException e) {
+                System.out.println(e);
+            }
+        }
+        return client;
     }
 
     /**
      * get String from keyboard
-     * @param request
+     * @param in parameter, which get from keyboard
+     * @param request request what we must do
      */
-    private String getStringFromKeybr(String request) {
-        Scanner scanner = new Scanner(System.in);
+    private String getStringFromKeybr(InputStream in, String request) {
+        Scanner scanner = new Scanner(in);
         System.out.println(request);
         return scanner.next();
     }

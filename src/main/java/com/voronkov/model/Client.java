@@ -1,4 +1,4 @@
-package com.voronkov;
+package com.voronkov.model;
 
 /**
  * Client

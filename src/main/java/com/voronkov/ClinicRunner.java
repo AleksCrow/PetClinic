@@ -1,5 +1,7 @@
 package com.voronkov;
 
+import com.voronkov.exceptions.NotFoundException;
+
 /**
  * ClinicRunner
  * @author Sanek
@@ -7,7 +9,7 @@ package com.voronkov;
  */
 public class ClinicRunner {
 
-    public static void main(String[] arg) {
+    public static void main(String[] arg) throws NotFoundException {
         final Clinic clinic = new Clinic();
 
         clinic.getOperation();
